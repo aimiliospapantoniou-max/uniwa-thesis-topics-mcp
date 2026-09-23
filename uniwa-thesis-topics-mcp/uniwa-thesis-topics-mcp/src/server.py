@@ -10,7 +10,7 @@ from pypdf import PdfReader
 from fastmcp import FastMCP
 
 mcp = FastMCP("UNIWA Thesis Topics")
-DOMAINS = ("uniwa.gr", "eee.uniwa.gr", "polynoe.lib.uniwa.gr", "edml.uniwa.gr")
+DOMAINS = ("uniwa.gr", "eee.uniwa.gr", "polynoe.lib.uniwa.gr", "edml.uniwa.gr", "openarchives.gr")
 
 
 def official(u: str) -> bool:
@@ -135,6 +135,8 @@ async def search_thesis_topics(professor: str = "", query: str = "", max_results
         f'"{term}" site:uniwa.gr "θέμα διπλωματικής"',
         f'"{term}" site:uniwa.gr filetype:pdf διπλωματική',
         f'"{term}" site:polynoe.lib.uniwa.gr διπλωματική',
+        f'"{term}" site:openarchives.gr/aggregator-openarchives/edm/polynoe "Διπλωματική εργασία"',
+        f'"Παναγιώτης Φωτόπουλος" site:openarchives.gr/aggregator-openarchives/edm/polynoe',
     ]
     if query and professor:
         qs += [
