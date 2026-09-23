@@ -56,4 +56,12 @@ async def search_thesis_topics(professor:str='',query:str='',max_results:int=10)
         out.append({'title':title,'professor':professor or 'Not identified','availability':status(title,body),'source_url':x['url'],'source_type':kind,'evidence':x['snippet'][:600]})
         if len(out)>=n: break
     return {'status':'ok','search':{'professor':professor,'query':query,'official_domains_only':True},'results':out,'warning':'Historical/completed theses are never presented as currently available; uncertain availability is marked proposed_or_unconfirmed.'}
-if __name__=='__main__': mcp.run(transport='streamable-http',host='0.0.0.0',port=8000)
+import os
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", "8000"))
+    mcp.run(
+        transport="streamable-http",
+        host="0.0.0.0",
+        port=port
+    )
