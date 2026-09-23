@@ -60,23 +60,43 @@ def search_bing(q: str, n: int = 8):
         r = c.get(url)
         r.raise_for_status()
     soup = BeautifulSoup(r.text, "html.parser")
-    out = []
-    for item in soup.select("li.b_algo"):
-        a = item.select_one("h2 a")
-        if not a or not a.get("href"):
+    out, seen = [], set()
+    candidates = soup.select("li.b_algo h2 a") or soup.select("h2 a")
+    for a in candidates:
+        href = a.get("href", "")
+        title = clean(a.get_text(" "))
+        if not href or not title or href in seen:
             continue
-        snippet = item.select_one(".b_caption p")
-        out.append({
-            "title": clean(a.get_text(" ")),
-            "url": a["href"],
-            "snippet": clean(snippet.get_text(" ")) if snippet else ""
-        })
+        seen.add(href)
+        parent = a.find_parent("li") or a.parent
+        snippet = parent.select_one(".b_caption p") if parent else None
+        out.append({"title": title, "url": href,
+                    "snippet": clean(snippet.get_text(" ")) if snippet else ""})
         if len(out) >= n:
             break
     return out
 
 
 def search_ddg(q: str, n: int = 8):
+    try:
+        url = "https://html.duckduckgo.com/html/?q=" + quote(q)
+        headers = {"User-Agent": "Mozilla/5.0"}
+        with httpx.Client(follow_redirects=True, timeout=20, headers=headers) as c:
+            r = c.get(url)
+            r.raise_for_status()
+        soup = BeautifulSoup(r.text, "html.parser")
+        out = []
+        for item in soup.select(".result"):
+            a = item.select_one(".result__a")
+            if not a or not a.get("href"):
+                continue
+            sn = item.select_one(".result__snippet")
+            out.append({"title": clean(a.get_text(" ")), "url": a["href"],
+                        "snippet": clean(sn.get_text(" ")) if sn else ""})
+            if len(out) >= n:
+                return out
+    except Exception:
+        pass
     try:
         from duckduckgo_search import DDGS
         with DDGS() as d:
